@@ -87,7 +87,7 @@ class MplayerBackend
 	def instantiate_mplayer
 		@pipe = IO.popen("mplayer -cache 200 -input file=#{@fifo.filename} #{@url}")
 		Thread.new do
-			while true
+			while not @pipe.eof
 				@status = @pipe.readline
 				if @status =~ /Connecting to server/
 					changed
@@ -100,8 +100,9 @@ class MplayerBackend
 					notify_observers($')
 				end
 			end
+			puts "mplayer closed retry te reinstantiate it"
+			instantiate_mplayer if @playing
 		end
-		instantiate_mplayer if @playing
 	end
 end
 
