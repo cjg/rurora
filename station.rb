@@ -64,7 +64,17 @@ class RadioStationLibrary
 		@stations.each {|i| yield(i)} if block_given?
 	end
 
-	private
+	def [](key)
+		if key.kind_of?(Integer)
+			return @stations[key]
+		end
+		@stations.each do |x|
+			return x if x.name == key
+		end
+		return nil
+	end
+
+  	private
 	def commit
 		File.open(@filename, 'w' ) do |out|
 			YAML.dump(@stations, out)

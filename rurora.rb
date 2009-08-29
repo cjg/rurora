@@ -19,13 +19,18 @@
 
 require 'gtk2'
 require 'mplayer'
+require 'station'
 
 class RubyRockRadio
 	def initialize
 		@mainwindow = Gtk::Window.new("Ruby Rock Radio")
 		@mainwindow.signal_connect("destroy") { quit }
 		@backend = MplayerBackend.new
-		@backend.url = 'http://151.1.245.1/20'
+		#@backend.url = 'http://151.1.245.1/20'
+		@station_library = RadioStationLibrary.new('rurora.library')
+		@station_library.add(RadioStation.new('Virgin Radio', 'http://151.1.245.1/20'))
+		@station_library.add(RadioStation.new('Delicious Agony',
+			'icyx://s2.viastreaming.net:7070'))
 		build_layout
 		@backend.add_observer(self)
 		@mainwindow.show_all
@@ -45,7 +50,16 @@ class RubyRockRadio
 		@mainwindow.border_width = 6
 		main_box = Gtk::VBox.new(false, 12)
 
-		main_box.pack_start(Gtk::ComboBox.new, false, false, 0)
+		@station_library_box = RadioStationBox.new(@station_library)
+		@station_library_box.signal_connect("changed") do
+			url = @station_library[@station_library_box.active_text].url
+			unless url == @backend.url
+				@backend.stop
+				@backend.url = url
+				set_button
+			end
+		end
+		main_box.pack_start(@station_library_box, false, false, 0)
 
 		box1 = Gtk::HBox.new(true, 3)
 
@@ -83,18 +97,23 @@ class RubyRockRadio
 	end
 
 	def set_button
-		@play_button.sensitive = (not @backend.playing? or @backend.paused?)
+		@play_button.sensitive = (@backend.url != '' and
+			(not @backend.playing? or @backend.paused?))
 		@pause_button.sensitive = (@backend.playing? and not @backend.paused?)
 		@stop_button.sensitive = @backend.playing?
 	end
 end
 
-class RadioStation
-	attr_accessor :name, :url
+class RadioStationBox < Gtk::ComboBox
+	def initialize(library)
+		super(true)
+		library.add_observer(self)
+		update(library)
+	end
 
-	def initialize(name, url)
-		@name = name
-		@url = url
+	def update(library)
+		set_model(Gtk::ListStore.new(String))
+		library.each {|x| append_text(x.name)}
 	end
 end
 
