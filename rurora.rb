@@ -79,21 +79,21 @@ class RubyRockRadio
       @backend.play
       set_button
     end
-    box1.pack_start(@play_button, false, false, 0)
+    box1.pack_start(@play_button, true, true, 0)
 
     @pause_button = Gtk::Button.new Gtk::Stock::MEDIA_PAUSE
     @pause_button.signal_connect("clicked") do
       @backend.pause
       set_button
     end
-    box1.pack_start(@pause_button, false, false, 0)
+    box1.pack_start(@pause_button, true, true, 0)
 
     @stop_button = Gtk::Button.new Gtk::Stock::MEDIA_STOP
     @stop_button.signal_connect("clicked") do
       @backend.stop
       set_button
     end
-    box1.pack_start(@stop_button, false, false, 0)
+    box1.pack_start(@stop_button, true, true, 0)
 
     set_button
 
